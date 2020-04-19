@@ -2,10 +2,11 @@
 #
 ######################################################################
 #
-#                  Author: Andrwe Lord Weber
-#                  Mail: lord-weber-andrwe <at> andrwe <dot> org
-#                  Version: 0.3
-#                  URL: http://andrwe.dyndns.org/doku.php/scripting/bash/privoxy-blocklist
+#		   PRIVOXY BLOCKLIST REVISITED 2020
+#                  Authors: vvn, Andrwe Lord Weber
+#                  Mail: vvn <at> eudemonics <dot> org
+#                  Version: 0.4
+#                  URL: https://github.com/eudemonics/privoxy-blocklist
 #
 ##################
 #
@@ -26,10 +27,10 @@
 ######################################################################
 
 # script config-file
-SCRIPTCONF=/etc/conf.d/privoxy-blacklist
+SCRIPTCONF=/usr/local/etc/privoxy/blocklist.conf
 # dependencies
 DEPENDS=( 'privoxy' 'sed' 'grep' 'bash' 'wget' )
-
+OS=$(uname)
 ######################################################################
 #
 #                  No changes needed after this line.
@@ -86,7 +87,7 @@ function main()
     wget -t 3 --no-check-certificate -O ${file} ${url} >${TMPDIR}/wget-${url//\//#}.log 2>&1
     debug "$(cat ${TMPDIR}/wget-${url//\//#}.log)" 2
     debug ".. downloading done." 0
-    [ "$(grep -E '^.*\[Adblock.*\].*$' ${file})" == "" ] && echo "The list recieved from ${url} isn't an AdblockPlus list. Skipped" && continue
+    # [ "$(grep -E '^.*\[Adblock.*\].*$' ${file})" == "" ] && echo "The list recieved from ${url} isn't an AdblockPlus list. Skipped" && continue
 
     # convert AdblockPlus list to Privoxy list
     # blacklist of urls
@@ -139,25 +140,44 @@ function main()
     
     # install Privoxy actionsfile
     install -o ${PRIVOXY_USER} -g ${PRIVOXY_GROUP} ${VERBOSE} ${actionfile} ${PRIVOXY_DIR}
-    if [ "$(grep $(basename ${actionfile}) ${PRIVOXY_CONF})" == "" ] 
+    # install ${VERBOSE} ${actionfile} ${PRIVOXY_DIR}
+    BASE_ACTION=$(basename ${actionfile})
+    echo "Adding to privoxy config: $BASE_ACTION ... "
+    if [ "$(grep $BASE_ACTION ${PRIVOXY_CONF})" == "" ] 
     then
       debug "\nModifying ${PRIVOXY_CONF} ..." 0
-      sed "s/^actionsfile user\.action/actionsfile $(basename ${actionfile})\nactionsfile user.action/" ${PRIVOXY_CONF} > ${TMPDIR}/config
+      if [ "$OS" == "Darwin" ]
+      then
+        # sed '/^\(#*\)actionsfile user\.action/ a\ #actionsfile $(basename ${actionfile})\ #' ${PRIVOXY_CONF} > ${TMPDIR}/config
+        sed 's/^\(#*\)actionsfile user\.action/actionsfile '$BASE_ACTION'\'$'\n''\1actionsfile user.action/g' ${PRIVOXY_CONF} > ${TMPDIR}/config
+      else
+        sed "s/^\(#*\)actionsfile user\.action/actionsfile $(basename ${actionfile})\n\1actionsfile user.action/g" ${PRIVOXY_CONF} > ${TMPDIR}/config
+      fi
       debug "... modification done.\n" 0
       debug "Installing new config ..." 0
       install -o ${PRIVOXY_USER} -g ${PRIVOXY_GROUP} ${VERBOSE} ${TMPDIR}/config ${PRIVOXY_CONF}
+      # install ${VERBOSE} ${TMPDIR}/config ${PRIVOXY_CONF}
       debug "... installation done\n" 0
     fi	
 
     # install Privoxy filterfile
     install -o ${PRIVOXY_USER} -g ${PRIVOXY_GROUP} ${VERBOSE} ${filterfile} ${PRIVOXY_DIR}
-    if $(grep $(basename ${filterfile}) ${PRIVOXY_CONF})
+    # install ${VERBOSE} ${filterfile} ${PRIVOXY_DIR}
+    BASE_FILTER=$(basename ${filterfile})
+    echo "Adding to privoxy config: $BASE_FILTER ... "
+    if [ "$(grep $BASE_FILTER ${PRIVOXY_CONF})" == "" ]
     then
       debug "\nModifying ${PRIVOXY_CONF} ..." 0
-      sed "s/^\(#*\)filterfile user\.filter/filterfile $(basename ${filterfile})\n\1filterfile user.filter/" ${PRIVOXY_CONF} > ${TMPDIR}/config
+      if [ "$OS" == "Darwin" ]
+      then
+        sed 's/^\(#*\)filterfile user\.filter/filterfile '$BASE_FILTER'\'$'\n''\1filterfile user.filter/g' ${PRIVOXY_CONF} > ${TMPDIR}/config
+      else
+        sed "s/^\(#*\)filterfile user\.filter/filterfile $(basename ${filterfile})\n\1filterfile user.filter/g" ${PRIVOXY_CONF} > ${TMPDIR}/config
+      fi
       debug "... modification done.\n" 0
       debug "Installing new config ..." 0
       install -o ${PRIVOXY_USER} -g ${PRIVOXY_GROUP} ${VERBOSE} ${TMPDIR}/config ${PRIVOXY_CONF}
+      # install ${VERBOSE} ${TMPDIR}/config ${PRIVOXY_CONF}
       debug "... installation done\n" 0
     fi	
 
@@ -181,7 +201,7 @@ INIT_CONF=\"/etc/conf.d/privoxy\"
 # !! These values will be overwritten by INIT_CONF !!
 #PRIVOXY_USER=\"privoxy\"
 #PRIVOXY_GROUP=\"privoxy\"
-#PRIVOXY_CONF=\"/etc/privoxy/config\"
+#PRIVOXY_CONF=\"/usr/local/etc/privoxy/config\"
 
 # name for lock file (default: script name)
 TMPNAME=\"\$(basename \${0})\"
