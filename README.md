@@ -1,18 +1,22 @@
-privoxy-blocklist
+# privoxy-blocklist
 =================
 
 Bash script converting AdBlock Plus rules and Adguard filters into privoxy format.
 
-Forked from original script written by Andrwe Lord Weber. Updated by vvn to include Adguard filters and some other functions.
+Forked from original script written by **Andrwe Lord Weber**. Updated by **vvn** to include Adguard filters and some other functions.
 
-**TO USE:
+###TO USE:
 
-Copy privoxy-blocklist.sh and blocklist.conf into your privoxy directory. Default location for script is at /usr/local/etc/privoxy.
+Copy privoxy-blocklist.sh and blocklist.conf into your privoxy config directory.
 
-Edit blocklist.conf to your own setup. Make sure all paths and user/group settings are correct.
+Default location for config on Linux is **/etc/privoxy** and on OSX is **/usr/local/etc/privoxy**.
 
-Run commands within privoxy folder:
+Edit blocklist.conf and the top few lines of privoxy-blocklist.sh to your own setup. Make sure that all paths exist and are accessible, and user/group settings are correct.
 
-chmod +x privoxy-blocklist.sh
+Execute commands in terminal from within privoxy config directory:
 
-sudo ./privoxy-blocklist.sh
+> chmod +x privoxy-blocklist.sh
+
+> sudo ./privoxy-blocklist.sh
+
+**You can keep the adblock filters updated automatically by creating a crontab to run the script as often as you prefer.**
