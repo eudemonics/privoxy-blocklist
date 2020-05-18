@@ -5,7 +5,7 @@
 #		   PRIVOXY BLOCKLIST REVISITED 2020
 #                  Authors: vvn, Andrwe Lord Weber
 #                  Mail: vvn <at> eudemonics <dot> org
-#                  Version: 0.4
+#                  Version: 0.5
 #                  URL: https://github.com/eudemonics/privoxy-blocklist
 #
 ##################
@@ -26,11 +26,22 @@
 #
 ######################################################################
 
-# script config-file
-SCRIPTCONF=/usr/local/etc/privoxy/blocklist.conf
 # dependencies
 DEPENDS=( 'privoxy' 'sed' 'grep' 'bash' 'wget' )
 OS=$(uname)
+
+if [ "$OS" == "Darwin" ]; then
+  SCRIPTCONF=/usr/local/etc/privoxy/blocklist.conf
+else
+  SCRIPTCONF=/etc/privoxy/blocklist.conf
+fi
+
+# Set alternate script directory HERE after "SCRIPTCONF=" and uncomment
+# the following setting if script and config files are located somewhere
+# other than /etc/privoxy or /usr/local/etc/privoxy
+
+#SCRIPTCONF=$(pwd)
+
 ######################################################################
 #
 #                  No changes needed after this line.

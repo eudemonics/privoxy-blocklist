@@ -5,7 +5,7 @@ Bash script converting AdBlock Plus rules and Adguard filters into privoxy forma
 
 Forked from original script written by **Andrwe Lord Weber**. Updated by **vvn** to include Adguard filters and some other functions.
 
-###TO USE:
+## TO USE:
 
 Copy privoxy-blocklist.sh and blocklist.conf into your privoxy config directory.
 
